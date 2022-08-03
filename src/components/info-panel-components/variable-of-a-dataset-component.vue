@@ -1,8 +1,8 @@
 <template>
-  <div v-if="getTheiaVariablesOfADataset.length > 0">
-    <div class="ui segment">
-      <div class="ui top attached label">
-        <i class="info icon"></i> Theia/OZCAR variables of the dataset:
+  <div  class="ui segment" v-if="getTheiaVariablesOfADataset.length > 0">
+    
+      <div class="ui top left attached label">
+        Theia/OZCAR variables of the dataset:
       </div>
       <div id="other-theia-variable-placeholder">
         <span
@@ -11,17 +11,16 @@
           :key="variable.uri"
         >
           <a
-            class="ui teal label"
+            class="ui blue label"
             :href="variable.uri"
             target="_blank"
           >{{getI18n(variable.prefLabel,"en")}}</a>
         </span>
       </div>
     </div>
-  </div>
 </template>
 <style>
-#other-theia-variable-placeholder span > a.ui.teal.label {
+#other-theia-variable-placeholder span > a.ui.blue.label {
 	margin: 0px 2px 2px 0px;
 }
 </style>

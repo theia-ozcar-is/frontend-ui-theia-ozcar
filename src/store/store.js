@@ -9,6 +9,7 @@ import { facets } from "./facetModule.js";
 import { pages } from "./pageModule.js";
 import { detailedItems } from "./detailedItemModule.js";
 import { itemList } from "./itemListModule.js";
+import { user } from "./userModule.js";
 
 Vue.use(Vuex);
 
@@ -16,7 +17,6 @@ Vue.use(Vuex);
  * Method to check if the filter object from Vuex filter store is empty or not
  * @param {Object} filters filter object from Vuex filter store
  */
-
 let categoryNodeCount0 = node => {
   if (node.narrowers) {
     node.count = 0;
@@ -136,7 +136,7 @@ const actions = {
           /**
            * if the response content is empty the facet is reseted using the whole database
            */
-          if (response.data.observationDocumentLitePage.content.length === 0) {
+          if (response.data.mapItems.length === 0) {
             await axiosInstance
               .get("/observation/initFacets")
               .then(response => {
@@ -160,24 +160,21 @@ const actions = {
                     });
                   }
                 }
-                store.commit("UPDATE_FACETED_CLASSIFICATION", {
-                  payload: facet,
-                  categoryFilters: store.rootGetters.getCategoryNodesSelected
-                });
+                store.commit("UPDATE_FACETED_CLASSIFICATION", facet);
+                store.commit("UPDATE_FULL_FACETED_CLASSIFICATION", {payload:store.rootGetters.getFullFacetClassification,categoryFilters:store.rootGetters.getCategoryNodesSelected});
               });
             store.commit("UPDATE_MAP_ITEMS", []);
             store.commit("UPDATE_OBSERVATION_LIST_ITEMS", []);
           } else {
-            store.commit("UPDATE_FACETED_CLASSIFICATION", {
-              payload: response.data.facetClassification,
-              categoryFilters: store.rootGetters.getCategoryNodesSelected
-            });
-            store.commit(
-              "UPDATE_OBSERVATION_LIST_ITEMS",
-              response.data.observationDocumentLitePage.content
-            );
-            store.commit("UPDATE_PAGE_SIZE", 10);
-            store.dispatch("setItemListNature", "observation").then(() => {
+            store.commit("UPDATE_FACETED_CLASSIFICATION", response.data.facetClassification);
+            store.commit("UPDATE_FULL_FACETED_CLASSIFICATION", {payload:store.rootGetters.getFullFacetClassification,categoryFilters:store.rootGetters.getCategoryNodesSelected});
+            // store.commit(
+            //   "UPDATE_OBSERVATION_LIST_ITEMS",
+            //   response.data.observationDocumentLitePage.content
+            // );
+            // store.commit("UPDATE_PAGE_SIZE", 10);
+            store.dispatch("setItemListNature", "observation")
+                .then(() => {
               store.dispatch("changePage" , {
                 filters: store.rootGetters.getFilters,
                 pageSize: 10,
@@ -206,6 +203,7 @@ export default new Vuex.Store({
     filters,
     facets,
     itemList,
-    detailedItems
+    detailedItems,
+    user
   }
 });

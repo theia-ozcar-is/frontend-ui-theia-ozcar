@@ -1,5 +1,4 @@
 const path = require("path");
-const webpack = require("webpack");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 // SCSS loader for transpiling SCSS files to CSS
@@ -9,7 +8,10 @@ const scssLoader = {
     "vue-style-loader",
     {
       loader: "css-loader",
-      options: { modules: false }
+      options: {
+        modules: false,
+        esModule: false
+      }
     },
     "sass-loader"
   ]
@@ -18,33 +20,36 @@ const scssLoader = {
 // URL loader to resolve data-urls at build time
 const urlLoader = {
   test: /\.(png|jpg|svg)$/,
-  loader: "url-loader?limit=10000000000000000"
+  use:[{
+    loader:"url-loader",
+    options:{
+      limit:10000,
+      esModule:false,
+      name:path.posix.join('static', '[name].[hash:7].[ext]')
+    }
+  }]
 };
-
-// // HTML load to allow us to import HTML templates into our JS files
-// const htmlLoader = {
-//     test: /\.html$/,
-//     loader: 'html-loader'
-// }
 
 // Vue loader to resolve single file components
 const vueLoader = {
   test: /\.vue$/,
-  loader: "vue-loader"
+  use:[
+    {loader: "vue-loader"}
+  ]
 };
-const VueLoaderPlugin = require("vue-loader/lib/plugin");
+const { VueLoaderPlugin } = require('vue-loader');
 
 const webpackConfig = {
   mode: "development",
-  devtool: "source-map",
+  devtool: "eval-source-map",
   output: {
-    path: path.join(__dirname, "public"),
-    filename: "js/main.js"
+    path: path.join(__dirname, "dist"),
+    filename: "js/main.js",
+    publicPath: "/"
   },
   devServer: {
-    contentBase: path.join(__dirname, "public/"),
+    static: path.join(__dirname, "dist"),
     port: 80,
-    open: "google-chrome",
     proxy: {
       "/observation": {
         target: {
@@ -58,19 +63,14 @@ const webpackConfig = {
     }
   },
   module: {
-    rules: [scssLoader, urlLoader, vueLoader]
+    rules: [vueLoader, scssLoader, urlLoader ]
   },
   plugins: [
     new VueLoaderPlugin(),
-    // new HtmlWebpackPlugin({
-    //   template: path.join(__dirname, "public/index.html"),
-    // })
-    // new webpack.DefinePlugin({
-    //   'process.env':{
-    //     'NODE_ENV': JSON.stringify(process.env.NODE_ENV),
-    //     'API_HOST': JSON.stringify(process.env.API_HOST)
-    //   }
-    // })
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, "src/index.html"),
+    })
+
   ]
 };
 module.exports = webpackConfig;

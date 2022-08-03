@@ -1,26 +1,22 @@
 <template>
   <div>
     <div class="datepicker-placeholder">
-      <!-- <div id="datepicker-from">From :</div> -->
       <div class="datepicker-input">
         <datepicker
           placeholder="From"
-          :not-after="toDate"
+          :disabled-date="notAfterDate"
           lang="en"
-          v-model="fromDate"
-          @change="selectDate"
+          v-model="fromDateUTC"
         ></datepicker>
       </div>
     </div>
     <div class="datepicker-placeholder">
-      <!-- <div id="datepicker-to">To :</div> -->
       <div class="datepicker-input">
         <datepicker
           placeholder="To"
-          :not-before="fromDate"
+          :disabled-date="notBeforeDate"
           lang="en"
-          v-model="toDate"
-          @change="selectDate"
+          v-model="toDateUTC"
         ></datepicker>
       </div>
     </div>
@@ -29,6 +25,7 @@
 
 <script>
 import Datepicker from "vue2-datepicker";
+import 'vue2-datepicker/index.css';
 
 /**
  * @vuese
@@ -42,16 +39,16 @@ export default {
   },
   data() {
     return {
-     /**
-     * @vuese
-     * String - the date to begin research
-     */
-      fromDate: null,
-           /**
-     * @vuese
-     * String - the date to end research
-     */
-      toDate: null
+     // /**
+     // * @vuese
+     // * String - the date to begin research
+     // */
+     //  fromDate: null,
+     //       /**
+     // * @vuese
+     // * String - the date to end research
+     // */
+     //  toDate: null
     };
   },
   props: {
@@ -59,22 +56,81 @@ export default {
       //Position of the datepicker form
       required:true,
       type:Number
-    }
+    },
+    fromDate: null,
+    toDate: null
   },
-  methods: {
+  computed: {
     /**
      * @vuese
-     * Select a time interval to query observation.
+     * String - the date to begin research
      */
-    selectDate() {
-      // if (this.fromDate != null && this.toDate != null) {
-        //Fired when a time interval selected to query observations
+    fromDateUTC: {
+      get() {
+        if (this.fromDate){
+          const value = new Date(this.fromDate);
+          const offset = value.getTimezoneOffset();
+          return new Date(value.getTime() + offset * 60 * 1000);
+        } else {
+          return null
+        }
+      },
+      set(val) {
+        let fromDateTmp = null;
+        if (val) {
+          const offset = new Date().getTimezoneOffset();
+          fromDateTmp = new Date(val.getTime() - offset * 60 * 1000)
+        } else {
+          fromDateTmp = null;
+        }
+        this.$emit("interval-selected", {
+          position: this.position,
+          fromDate: fromDateTmp,
+          toDate: this.toDate
+        });
+      }
+    },
+    toDateUTC: {
+      get() {
+        if (this.toDate) {
+          const value = new Date(this.toDate);
+          const offset = value.getTimezoneOffset();
+          return new Date(value.getTime() + offset * 60 * 1000);
+        } else {
+          return null
+        }
+
+      },
+      set(val) {
+        let toDateTmp = null;
+        if (val) {
+          const offset = new Date().getTimezoneOffset();
+          toDateTmp = new Date(val.getTime() - offset * 60 * 1000)
+        } else {
+          toDateTmp = null;
+        }
         this.$emit("interval-selected", {
           position: this.position,
           fromDate: this.fromDate,
-          toDate: this.toDate
+          toDate: toDateTmp
         });
-      // }
+      }
+    }
+  },
+  methods: {
+    notBeforeDate(date) {
+      if (this.fromDateUTC) {
+        return date <= this.fromDateUTC
+      } else {
+        return false
+      }
+    },
+    notAfterDate( date) {
+      if (this.toDateUTC) {
+        return date >= this.toDateUTC
+      } else {
+        return false
+      }
     }
   }
 };

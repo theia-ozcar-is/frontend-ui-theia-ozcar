@@ -20,7 +20,7 @@
         :
         <div
           class="ui large teal label"
-        >{{getI18n(observation.observations[0].observedProperty.theiaVariable.prefLabel,"en")}}</div>
+        >{{getI18n(observation.observations[0].observedProperty.theiaVariable.simplifiedLabel,"en")}}</div>
         <span v-if="observation.observations[0].dataType && observation.observations[0].timeSerie">
           <b>Type:</b>
           {{observation.observations[0].dataType}} {{observation.observations[0].timeSerie ? 'time serie' : ''}}
@@ -120,8 +120,8 @@ export default {
      * Build the relative path of the producer logo to be printed
      */
     getLogoName() {
-      return (
-        "./assets/images/" +
+      return require(
+        "../../asset/images/" +
         this.observation.observations[0].observationId.substring(0, 4) +
         ".png"
       );

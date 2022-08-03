@@ -3,69 +3,38 @@
     <span @click="toggleFolding">
       <i :class="[setCircleIcon, 'circle', 'icon']"></i>
       <span>
-        <b>{{type}}</b>
+        <b>{{ type }}</b>
       </span>
     </span>
 
     <div v-show="!isFolded" class="child-nodes-content">
       <div>
         <ul>
-          <!-- <li v-for="(item,index) in fundings" :ref="item.name" :key="index" class="funding-node">
-            <facet-checkbox-element-component
-              v-if="(!item.acronym || item.acronym == null) && (type == 'Other universities and schools' || type == 'Other research institutes')"
-              :mutationName="mutationName"
-              :name="getCountryI18n(item,'en') + ' - ' + item.name"
-              :count="item.count"
-              :info="false"
-            ></facet-checkbox-element-component>
-            <facet-checkbox-element-component
-              v-else-if="item.acronym != null && (type == 'Other universities and schools' || type == 'Other research institutes')"
-              :mutationName="mutationName"
-              :name=" getCountryI18n(item,'en') + ' - ('+ item.acronym +') - '+ item.name"
-              :count="item.count"
-              :info="false"
-            ></facet-checkbox-element-component>
-            <facet-checkbox-element-component
-              v-else-if="(!item.acronym || item.acronym == null)"
-              :mutationName="mutationName"
-              :name="item.name"
-              :count="item.count"
-              :info="false"
-            ></facet-checkbox-element-component>
-            <facet-checkbox-element-component
-              v-else
-              :mutationName="mutationName"
-              :name="'('+ item.acronym +') - '+ item.name"
-              :count="item.count"
-              :info="false"
-            ></facet-checkbox-element-component>
-            <a
-              class="funding-facet scanr link container"
-              v-if="item.idScanR"
-              :href="'https://scanr.enseignementsup-recherche.gouv.fr/structure/'+item.idScanR"
-              target="_blank"
-            >
-              <i class="blue circle info icon"></i>
-            </a>
-          </li>-->
           <li
-            v-for="(item,index) in fundingItems"
-            :ref="item.name"
-            :key="index"
-            class="funding-node"
+              v-for="(item,index) in fundingItems"
+              :ref="item.name"
+              :key="index"
+              class="funding-node"
           >
-            <facet-checkbox-element-component
-              :mutationName="mutationName"
-              :name="item.name"
-              :count="item.count"
-              :info="false"
-              :fundingName="item.fundingName"
+            <facet-checkbox-element-component v-if="getCountOfFundingNodeInResultFacet(item.fundingName) > -1"
+                                              :mutationName="mutationName"
+                                              :name="item.name"
+                                              :count=getCountOfFundingNodeInResultFacet(item.fundingName)
+                                              :info="false"
+                                              :fundingName="item.fundingName"
+            ></facet-checkbox-element-component>
+            <facet-checkbox-element-component v-else
+                                              class="not-in-results"
+                                              :mutationName="mutationName"
+                                              :name="item.name"
+                                              :info="false"
+                                              :fundingName="item.fundingName"
             ></facet-checkbox-element-component>
             <a
-              class="funding-facet scanr link container"
-              v-if="item.idScanR"
-              :href="'https://scanr.enseignementsup-recherche.gouv.fr/structure/'+item.idScanR"
-              target="_blank"
+                class="funding-facet scanr link container"
+                v-if="item.idScanR"
+                :href="'https://scanr.enseignementsup-recherche.gouv.fr/structure/'+item.idScanR"
+                target="_blank"
             >
               <i class="blue circle info icon"></i>
             </a>
@@ -78,7 +47,7 @@
 
 <script>
 import facetCheckboxElementComponent from "./facet-checkbox-element-component.vue";
-import { mapGetters } from "vuex";
+import {mapGetters} from "vuex";
 
 /**
  * @vuese
@@ -97,7 +66,7 @@ export default {
       type: Array,
       required: true
     },
-    //Store mutation name to update the filters. ex "UPDATE_FILTERS_FUNDING_NAMES"
+    //Store mutation name to update the filters. ex "TOGGLE_FILTERS_FUNDING_NAMES"
     mutationName: {
       type: String,
       required: true
@@ -112,7 +81,7 @@ export default {
     facetCheckboxElementComponent
   },
   computed: {
-    ...mapGetters(["getFacetClassification", "getFilters"]),
+    ...mapGetters(["getFacetClassification" ,"getFullFacetClassification","getFilters"]),
     /**
      * @vuese
      * String - "plus" "minus" "outline". shape of the circle icon depending on the node state
@@ -129,9 +98,9 @@ export default {
       let items = [];
       this.fundings.forEach(element => {
         if (
-          (!element.acronym || element.acronym == null) &&
-          (this.type == "Other universities and schools" ||
-            this.type == "Other research institutes")
+            !element.acronym &&
+            (this.type === "Other universities and schools" ||
+                this.type === "Other research institutes" || this.type === "Other")
         ) {
           items.push({
             name: this.getCountryI18n(element, "en") + " - " + element.name,
@@ -140,27 +109,27 @@ export default {
             idScanR: element.idScanR
           });
         } else if (
-          element.acronym != null &&
-          (this.type == "Other universities and schools" ||
-            this.type == "Other research institutes")
+            element.acronym &&
+            (this.type === "Other universities and schools" ||
+                this.type === "Other research institutes" || this.type === "Other")
         ) {
           items.push({
             name:
-              this.getCountryI18n(element, "en") +
-              " - (" +
-              element.acronym +
-              ") - " +
-              element.name,
+                this.getCountryI18n(element, "en") +
+                " - (" +
+                element.acronym +
+                ") - " +
+                element.name,
             fundingName: element.name,
             count: element.count,
             idScanR: element.idScanR
           });
         } else if (
-          (!element.acronym || element.acronym == null) &&
-          !(
-            this.type == "Other universities and schools" ||
-            this.type == "Other research institutes"
-          )
+            !element.acronym &&
+            !(
+                this.type === "Other universities and schools" ||
+                this.type === "Other research institutes" || this.type === "Other"
+            )
         ) {
           items.push({
             name: element.name,
@@ -177,7 +146,11 @@ export default {
           });
         }
       });
-      return items.sort((a, b) => a.name.localeCompare(b.name));
+      items.sort((a, b) => a.name.localeCompare(b.name));
+      for (var item of items) {
+        item.name === "Other" ? items.push(items.splice(item, 1)[0]) : 0;
+      }
+      return items;
     }
   },
   methods: {
@@ -199,6 +172,23 @@ export default {
       } else {
         return "";
       }
+    },
+    /**
+     * @vuese
+     * Check if the funding node exists a as a resulting faceted producer node after a user query.
+     * If it exists the method return the faceted producer node count otherwise it returns undefined
+     * @param fundingNodeName initial producer node
+     * @returns Number - result count for the given facet element
+     */
+    getCountOfFundingNodeInResultFacet(fundingNodeName) {
+      const index = this.getFacetClassification.fundingNamesFacet.findIndex(element => element.name === fundingNodeName);
+      if (index >= 0){
+        return this.getFacetClassification.fundingNamesFacet[index].count;
+      } else if (this.getFilters.fundingNames.some(element => element === fundingNodeName)) {
+        return 0;
+      } else {
+        return undefined;
+      }
     }
   },
   watch: {
@@ -209,15 +199,15 @@ export default {
      */
     getFacetClassification: {
       handler() {
-        this.isFolded = !this.getFacetClassification.fundingNamesFacet.some(
-          funder => {
-            return (
-              funder.type == this.type &&
-              this.getFilters.fundingNames.some(filter => {
-                return filter == funder.name;
-              })
-            );
-          }
+        this.isFolded = !this.getFullFacetClassification.fundingNamesFacet.some(
+            funder => {
+              return (
+                  funder.type === this.type &&
+                  this.getFilters.fundingNames.some(filter => {
+                    return filter === funder.name;
+                  })
+              );
+            }
         );
       },
       deep: true

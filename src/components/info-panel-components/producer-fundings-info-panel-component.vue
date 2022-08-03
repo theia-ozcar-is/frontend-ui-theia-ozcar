@@ -17,12 +17,12 @@
                   <i class="blue info circle icon"></i>
                 </a>
               </span>
+              <span v-if="fund.country && name.replace(/\s.*/,'')!='French'">
+                <i>{{getI18n(fund.country,"en")}} - </i>
+              </span>
               <span v-if="fund.name">{{getI18n(fund.name,"en")}}</span>
               <span v-if="fund.acronym">
                 <i>({{fund.acronym}})</i>
-              </span>
-              <span v-if="fund.country">
-                <i>- {{getI18n(fund.country,"en")}}</i>
               </span>
             </div>
           </div>
@@ -70,7 +70,11 @@ export default {
     getI18n(el, lang) {
       let tmp = el.find(element => element.lang === lang);
       return tmp.text;
+    },
+    checkFrench(name) {
+      return name.replace(/\s.*/,'')!='French'
     }
+
   }
 };
 </script>
@@ -79,6 +83,7 @@ export default {
 .funding.list {
   max-height: 50rem;
   overflow: auto;
+  text-align: left;
 }
 
 .funding.idScanR.link {

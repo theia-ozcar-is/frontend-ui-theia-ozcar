@@ -2,7 +2,7 @@
   <div v-if="getObservationsOfADataset.length > 0">
     <div class="ui segment" id="other-observations-of-dataset-table-container">
       <div class="ui top attached label">
-        <i class="info icon"></i> Other variables of this dataset:
+        <i class="info icon"></i> Other measurements of this dataset:
       </div>
       <div :class="['ui', loader ? 'active':'', 'inverted', 'dimmer']">
         <div class="ui loader"></div>
@@ -36,9 +36,9 @@
                 <div v-if="obs.observedProperty.unit">{{getI18n(obs.observedProperty.unit,"en")}}</div>
               </td>
               <td data-label="Temporal extent">
-                {{obs.temporalExtent.dateBeg}}
+                {{obs.temporalExtent.dateBeg.replace(/T.*/,'')}}
                 <br />
-                {{obs.temporalExtent.dateEnd}}
+                {{obs.temporalExtent.dateEnd.replace(/T.*/,'')}}
               </td>
               <td>
                 <div

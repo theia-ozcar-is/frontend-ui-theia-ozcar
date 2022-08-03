@@ -17,6 +17,7 @@
 
     <metadata-component v-if="getTotalObservationsCount != 0"></metadata-component>
     <facet-search-component></facet-search-component>
+    <toggle-item-list-component :totalObservationsCount="getTotalObservationsCount"></toggle-item-list-component>
   </div>
 </template>
 
@@ -56,6 +57,7 @@ import mapComponent from "./components/map-components/map-component.vue";
 import metadataComponent from "./components/result-list-components/metadata-component.vue";
 import infoPanelComponent from "./components/info-panel-components/info-panel-component.vue";
 import facetSearchComponent from "./components/facet-components/facet-search-component.vue";
+import toggleItemListComponent from "./components/toggle-item-list-component.vue";
 
 
 export default {
@@ -65,7 +67,8 @@ export default {
     mapComponent,
     metadataComponent,
     infoPanelComponent,
-    facetSearchComponent
+    facetSearchComponent,
+    toggleItemListComponent
   },
   computed: {
     ...Vuex.mapGetters(["getLoading", "getMapItems", "getTotalObservationsCount"])

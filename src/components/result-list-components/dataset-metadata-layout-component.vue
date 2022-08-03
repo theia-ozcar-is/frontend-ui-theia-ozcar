@@ -96,7 +96,7 @@ export default {
      * Build the relative path of the producer logo to be printed
      */
     getLogoName() {
-      return "./assets/images/" + this.dataset.producerId + ".png";
+      return require("../../asset/images/" + this.dataset.producerId + ".png");
     }
   },
   watch: {

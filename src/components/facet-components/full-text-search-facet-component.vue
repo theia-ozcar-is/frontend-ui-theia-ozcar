@@ -1,6 +1,11 @@
 <template>
-  <div id="variable-placeholder" class="ui segment">
+  <div id="full-text-placeholder" class="ui segment">
     <div class="ui top attached label">
+      <i id="full-text-filters-info" class="circle info icon" @click="showFullTextInfoPopup"></i>
+      <div class="ui popup show-feature-of-interest-info-popup">
+        <p>The full text filter will search using each word in a phrase independently. You can force a full text query on a entire phrase using by writing the sentence in quotation marks.</p>
+        <p>Example: <i>"I want to query using this entire sentence"</i>.</p>
+      </div>
       <i class="edit icon"></i> Full text search
     </div>
     <div>
@@ -8,14 +13,14 @@
         <input v-model="query" placeholder="Search..." @keydown.enter="addWord" type="text" />
         <i class="search link icon" @click="addWord"></i>
       </div>
-      <div id="word-searched-placeholder">
-        <span class="item" v-for="(word, index) in words" :key="index">
-          <div class="ui tag teal label">
-            {{word}}
-            <i class="delete icon" @click="deleteWord($event)"></i>
-          </div>
-        </span>
-      </div>
+<!--      <div id="word-searched-placeholder">-->
+<!--        <span class="item" v-for="(word, index) in getFilters.fullText" :key="index">-->
+<!--          <div class="ui tag teal label">-->
+<!--            {{word}}-->
+<!--            <i class="delete icon" @click="deleteWord($event)"></i>-->
+<!--          </div>-->
+<!--        </span>-->
+<!--      </div>-->
     </div>
   </div>
 </template>
@@ -36,25 +41,19 @@ export default {
        * The query string in the search bar
        */
       query: "",
-      /**
-       * @vuese
-       * The array of word that need ot be queried
-       */
-      words: []
     };
   },
   computed: {
     /**
      * Getters from Vuex filter store
      */
-    ...mapGetters(["isFiltersEmpty"])
+    ...mapGetters(["isFiltersEmpty","getFilters","getFacetClassification"])
   },
   methods: {
     /**
      * Actions from Vuex filter and observation store
      */
     ...mapActions([
-      "searchObservations",
       "setFullTextFilter",
       "resetObservations",
       "initFacets"
@@ -66,22 +65,17 @@ export default {
      */
     addWord() {
       let queryTrim = this.query.trim();
-      if (queryTrim !== "" && this.words.indexOf(queryTrim) === -1) {
-        this.words.push(queryTrim);
-        let queryParam = "";
-        for (let i = 0; i < this.words.length; i++) {
-          queryParam = queryParam + this.words[i] + " ";
-        }
+      if (queryTrim !== "" && this.getFilters.fullText.indexOf(queryTrim) === -1) {
+        let tmp = this.getFilters.fullText
+        tmp.push(queryTrim);
         //Update filters (async)
-        //this.setFullTextFilter(queryParam.trim());
-        this.setFullTextFilter(this.words);
+        this.setFullTextFilter(tmp);
         //the search bar is emptied
         this.query = "";
       }
     },
 
     resetSelection() {
-      this.words = [];
       this.query = "";
     },
 
@@ -91,22 +85,26 @@ export default {
      * the filters are updated and observations are queried using the new filters
      * @arg event
      */
-    deleteWord(event) {
-      // the word to delete
-      let word = event.currentTarget.parentElement.innerText.trim();
-      //the word is deleted from words array
-      this.words.splice(this.words.indexOf(word.valueOf()), 1);
-      let queryParam = "";
-      //If the queryParam is empty, the filters are updated
-      // if the queryParam string is not emtpy the filter are updated
-      if (this.words.length == 0) {
-        this.setFullTextFilter(null);
-      } else {
-        for (let i = 0; i < this.words.length; i++) {
-          queryParam = queryParam + this.words[i] + " ";
-        }
-        this.setFullTextFilter(queryParam.trim());
-      }
+    // deleteWord(event) {
+    //   // the word to delete
+    //   let word = event.currentTarget.parentElement.innerText.trim();
+    //   //the word is deleted from full text filter array
+    //   let tmp = this.getFilters.fullText
+    //   tmp.splice(tmp.indexOf(word.valueOf()), 1);
+    //   let queryParam = "";
+    //   //If the queryParam is empty, the filters are updated
+    //   // if the queryParam string is not emtpy the filter are updated
+    //   if (tmp.length == 0) {
+    //     this.setFullTextFilter([]);
+    //   } else {
+    //     this.setFullTextFilter(tmp);
+    //   }
+    // },
+    showFullTextInfoPopup() {
+        $('#full-text-filters-info').popup({
+          on: 'manual',
+          position: 'bottom right'
+        }).popup('show')
     }
   }
 };
@@ -127,5 +125,10 @@ export default {
 
 #word-searched-placeholder > .item > .ui.tag.teal.label {
   margin: 0px 2px 2px 15px;
+}
+
+#full-text-filters-info {
+  cursor: pointer;
+  float: right;
 }
 </style>

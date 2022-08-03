@@ -14,7 +14,9 @@ const state = {
 
   totalItemCount: null,
 
-  itemList: []
+  itemList: [],
+
+  isFolded: true
 };
 
 const getters = {
@@ -26,6 +28,9 @@ const getters = {
   },
   getItemList: state => {
     return state.itemList;
+  },
+  isItemListFolded: state => {
+    return state.isFolded;
   }
 };
 
@@ -46,17 +51,6 @@ const actions = {
         payload: payload
       });
       resolve();
-      // store
-      //   .dispatch("changePage", {
-      //     filters: store.rootGetters.getFilters,
-      //     pageSize: 10,
-      //     pageSelected: 1
-      //   })
-      //   .then(() => {
-      //     store
-      //       .dispatch("setNumberOfPage", null, { root: true })
-      //       .then(() => resolve());
-      //   });
     });
   },
   setItemListStateAccordingToItemNature: (store, ItemNature) => {
@@ -97,6 +91,11 @@ const actions = {
         }
       }
     });
+  },
+  toggleItemList: (store) => {
+    store.commit("UPDATE_ITEM_LIST_STATE", {
+      stateObjectName: "isFolded",
+      payload: !store.getters.isItemListFolded});
   }
 };
 
@@ -108,7 +107,7 @@ export let itemList = {
   modules: {
     pages,
     producerItems,
-	observationListItems,
-	datasetListItems
+	  observationListItems,
+	  datasetListItems
   }
 };

@@ -3,10 +3,14 @@
     <div class="ui top attached label">
       <i class="calendar alternate outline icon"></i> Temporal extent
     </div>
-    <datepicker-component ref="firstDatepicker" :position="1" @interval-selected="addAselection"></datepicker-component>
-    <div v-for="(index) in numberOfIntervals-1" :key="index">
-      <b>OR</b>
-      <datepicker-component :position="index+1" @interval-selected="addAselection"></datepicker-component>
+    <div v-for="(index) in numberOfIntervals" :key="index">
+      <datepicker-component :ref="'datepickerPosition'+index" :position="index"
+                            :fromDate="getFilters.temporalExtents.length > index-1 && getFilters.temporalExtents[index-1].fromDate ? getFilters.temporalExtents[index-1].fromDate : null"
+                            :toDate="getFilters.temporalExtents.length > index-1 &&  getFilters.temporalExtents[index-1].toDate ? getFilters.temporalExtents[index-1].toDate : null"
+                            :id="'datepicker-position-'+index"
+                            @interval-selected="applyATemporalExtent">
+      </datepicker-component>
+      <b v-show="index < numberOfIntervals">OR</b>
     </div>
     <div class="temporal-extent-controls">
       <div>
@@ -14,28 +18,20 @@
           <i class="minus icon"></i>
         </button>
         <button
-          class="ui icon button"
-          :disabled="numberOfIntervals !== intervals.length"
-          @click="addInterval"
+            class="ui icon button"
+            :disabled="getFilters.temporalExtents.length  < numberOfIntervals"
+            @click="addInterval"
         >
           <i class="plus icon"></i>
         </button>
       </div>
-      <!-- <div>
-        <button class="ui button" @click="resetSelection">Reset</button>
-        <button
-          class="ui primary button"
-          :disabled="intervals.length < 1"
-          @click="submitSelection"
-        >Submit</button>
-      </div>-->
     </div>
   </div>
 </template>
 
 <script>
 import datepickerComponent from "./datepicker-component.vue";
-import { mapActions, mapGetters } from "vuex";
+import {mapActions, mapGetters} from "vuex";
 
 /**
  * @vuese
@@ -49,25 +45,15 @@ export default {
   },
   data() {
     return {
-      /**
-       * @vuese
-       * List of temporal extent
-       */
-      intervals: [],
-      /**
-       * @vuese
-       * Number of temporal extent form
-       */
       numberOfIntervals: 1
     };
   },
   computed: {
-    ...mapGetters(["getFilters", "isFiltersEmpty"])
+    ...mapGetters(["getFilters", "getFacetClassification"])
   },
   methods: {
     ...mapActions([
       "setTemporalExtentFilter",
-      "searchObservations",
       "resetObservations",
       "initFacets"
     ]),
@@ -76,51 +62,50 @@ export default {
      * Add a temporal extent form
      */
     addInterval() {
-      this.numberOfIntervals++;
+      if (this.getFilters.temporalExtents.length == this.numberOfIntervals) {
+        this.numberOfIntervals++;
+      }
     },
     /**
      * @vuese
      * Remove a tmeporal extent interval form
      */
     removeInterval() {
+      let tmp = this.getFilters.temporalExtents;
       if (this.numberOfIntervals > 1) {
-        if (this.numberOfIntervals === this.intervals.length) {
-          this.intervals = this.intervals.slice(0, this.intervals.length - 1);
+        if (this.numberOfIntervals === tmp.length) {
+          tmp = tmp.slice(0, tmp.length - 1);
         }
         this.numberOfIntervals--;
       }
-      this.setTemporalExtentFilter(this.intervals);
+      this.setTemporalExtentFilter({temporalExtents: tmp});
     },
     /**
      * @vuese
-     * Add a temporal extent to the query to be built
+     * Add a temporal extent to the filter of the store query the backend with the new filter. TemporalExtent with
+     * arguments fromDate and toDate equal to null are not added to the filters
      * @arg one temporalextent definition and its position
      */
-    addAselection(value) {
+    applyATemporalExtent(value) {
       function indexOfInterval(arr, position) {
-        return arr.findIndex(function(element) {
+        return arr.findIndex(function (element) {
           return element.position === position;
         });
       }
 
-      let index = indexOfInterval(this.intervals, value.position);
+      let index = indexOfInterval(this.getFilters.temporalExtents, value.position);
+      let tmp = this.getFilters.temporalExtents;
       if (index !== -1) {
-        // if (value.fromDate !== null && value.toDate !== null) {
-          this.intervals[index] = value;
-        // } else {
-        //   this.intervals[index] = null;
-        // }
+        tmp[index] = value;
       } else {
-        // if (value.fromDate !== null && value.toDate !== null) {
-          this.intervals.push(value);
-        // } else {
-        //   this.intervals[index] = null;
-        // }
+        tmp.push(value);
       }
       this.setTemporalExtentFilter(
-        this.intervals.filter(function(el) {
-          return el.toDate != null || el.fromDate != null;
-        })
+          {
+            temporalExtents: tmp.filter(function (el) {
+              return el.toDate != null || el.fromDate != null;
+            })
+          }
       );
     },
     /**
@@ -128,13 +113,55 @@ export default {
      * Reset temporal extent component
      */
     resetSelection() {
-      this.intervals = [];
       this.numberOfIntervals = 1;
-      this.$refs.firstDatepicker.toDate = null;
-      this.$refs.firstDatepicker.fromDate = null;
+      this.$refs.datepickerPosition1.toDate = null;
+      this.$refs.datepickerPosition1.fromDate = null;
+    },
+
+    /**
+     * This methods update the position of the temporal extent fitlers in the store
+     * (If the first temporal extent is removed, the first element of the array of temporal extent filter in the store
+     * will have a position equal to 2. This method is used to correct this position.
+    **/
+    alignTemporalExtentsPositionInFilter() {
+      let temporalExtents = [];
+      for (let i = 0 ; i < this.getFilters.temporalExtents.length ; i++) {
+        let tmp = this.getFilters.temporalExtents[i];
+        tmp.position = i +1;
+        temporalExtents.push(tmp);
+      }
+      this.setTemporalExtentFilter({searchObservations: false, temporalExtents})
     }
+  },
+  watch: {
+    /**
+     * @vuese
+     * watch isFolded
+     */
+    getFacetClassification: {
+      handler() {
+        if (this.getFilters.temporalExtents.length === 0) {
+          this.numberOfIntervals = 1
+        } else {
+          this.numberOfIntervals = this.getFilters.temporalExtents.length
+          this.alignTemporalExtentsPositionInFilter()
+        }
+      },
+      deep: true
+    }
+  },
+  mounted() {
+    this.$root.$on("delete-datepicker", id => {
+      // let position = null;
+      // this.$refs[id][0].fromDate = null;
+      // this.$refs[id][0].toDate = null;
+      let position = this.$refs[id][0].position;
+      this.applyATemporalExtent({fromDate: null, toDate: null, position: position})
+      //this.alignDatepickerComponentsWithFilters()
+    })
   }
-};
+}
+;
 </script>
 
 <style>

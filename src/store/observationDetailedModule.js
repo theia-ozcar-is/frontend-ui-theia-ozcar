@@ -97,53 +97,6 @@ const actions = {
     });
   },
 
-  // setObservationsOfADataset: (store, datasetId) => {
-  //   axiosInstance
-  //     .get("/observation/getObservationsOfADataset/" + datasetId)
-  //     .then(response => {
-  //       store.commit("UPDATE_OBSERVATIONS_DETAILED_STATE", {
-  //         stateObjectName: "observationsOfADataset",
-  //         payload: response.data
-  //       });
-  //     });
-  // },
-
-  // setObservationIdsOfOtherTheiaVariableAtLocation(store, { uri, coordinates }) {
-  //   //store.commit("UPDATE_OBSERVATIONS_DETAILED_STATE", {stateObjectName:"variablesAtOneLocation",payload:[]});
-  //   return new Promise(resolve => {
-  //     let headers = {
-  //       "Content-Type": "application/json"
-  //     };
-  //     axiosInstance
-  //       .post(
-  //         "/observation/getObservationIdsOfOtherTheiaVariableAtLocation",
-  //         JSON.stringify({ uri, coordinates }),
-  //         {
-  //           headers: headers
-  //         }
-  //       )
-  //       .then(response => {
-  //         store
-  //           .dispatch("setObservationsDetailed", JSON.stringify(response.data))
-  //           .then(() => resolve());
-  //       });
-  //   });
-  // },
-
-  // setBBOXOfADataset(store, datasetId) {
-  //   return new Promise(resolve => {
-  //     axiosInstance
-  //       .get("/observation/getBBOXOfADataset/" + datasetId)
-  //       .then(response => {
-  //         store.commit("UPDATE_OBSERVATIONS_DETAILED_STATE", {
-  //           stateObjectName: "BBOXOfADataset",
-  //           payload: response.data
-  //         });
-  //         resolve();
-  //       });
-  //   });
-  // },
-
   setCategoryHierarchies(store, categories) {
     return new Promise(resolve => {
       let headers = {

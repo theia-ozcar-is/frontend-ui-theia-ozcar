@@ -30,11 +30,10 @@
         <div class="ui segment">
           <div>Description : {{getI18n(webservice.description,"en")}}</div>
           <div>
-            Url :
             <a
               :href="getI18n (webservice.url,'en')"
               target="_blank"
-            >{{getI18n (webservice.url,'en')}}</a>
+            >Use this webservice</a>
           </div>
         </div>
       </div>

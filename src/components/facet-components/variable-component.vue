@@ -7,24 +7,25 @@
       <div class="ui icon input autocomplete" id="variables-search-bar">
         <i class="search icon"></i>
         <input
-          v-model="search"
-          @input="onChange"
-          @keydown.down="onArrowDown"
-          @keydown.up="onArrowUp"
-          @keydown.enter="onEnter"
-          placeholder="Select a variable..."
-          type="text"
+            v-model="search"
+            @input="onChange"
+            @keydown.down="onArrowDown"
+            @keydown.up="onArrowUp"
+            @keydown.enter="onEnter"
+            placeholder="Search for a variable..."
+            type="text"
         />
         <!-- <div class="ui teal button" @click="selectATheiaVariable">Select</div> -->
         <div v-show="isVisible">
           <ul v-if="results.length>0" class="autocomplete-results" ref="autocomplete-results">
             <li
-              v-for="(result,index) in results"
-              :key="index"
-              @click="setResult(result)"
-              class="autocomplete-result"
-              :class="{ 'is-active': index === arrowCounter }"
-            >{{result }}</li>
+                v-for="(queryableTheiaVariable,index) in results"
+                :key="index"
+                @click="queryVariable(queryableTheiaVariable)"
+                class="autocomplete-result"
+                :class="{ 'is-active': index === arrowCounter }"
+            >{{ getI18n(queryableTheiaVariable.simplifiedLabel,"en") }}
+            </li>
           </ul>
           <ul class="autocomplete-results-no-content" ref="autocomplete-results" v-else>
             <li class="autocomplete-result-no-content">
@@ -34,52 +35,41 @@
           </ul>
         </div>
       </div>
-      <div id="variable-tags-placeholder" v-if="variablesSelected.length > 0">
-        <span class="item" v-for="(variable, index) in variablesSelected" :key="index">
-          <div class="ui tag teal label">
-            {{variable}}
-            <i class="delete icon" @click="deleteVariable($event)"></i>
+      <div id="category-placeholder" class="ui segment">
+        <div class="ui top attached label">
+          <i class="chart area icon"></i> Categories of variable
+        </div>
+        <div v-if="getFacetClassification != null">
+          <div
+              class="category-tree-placeholder"
+              v-for="(node, index) in getFullFacetClassification.theiaCategoryTree"
+              :key="index"
+          >
+            <category-tree-component
+                :node="node"
+                :key="componentKey"
+            ></category-tree-component>
           </div>
-        </span>
-      </div>
-    </div>
-    <!-- <div class="ui divider"></div> -->
-    <div id="category-placeholder" class="ui segment">
-      <div class="ui top attached label">
-        <i class="chart area icon"></i> Categories of variable
-      </div>
-      <div v-if="getFacetClassification != null">
-        <div
-          class="category-tree-placeholder"
-          v-for="(node, index) in getFacetClassification.theiaCategoryTree"
-          :key="index"
-        >
-          <category-tree-component
-            :node="node"
-            v-on:select-a-theia-variable="setResult"
-            :key="componentKey"
-          ></category-tree-component>
         </div>
       </div>
+<!--      <div id="variable-tags-placeholder" v-if="getFilters.theiaVariables.length > 0">-->
+<!--        <span class="item" v-for="(variable, index) in getFilters.theiaVariables" :key="index">-->
+<!--          <div class="ui tag teal label">-->
+<!--            {{ getI18n(variable.prefLabel, "en") }}-->
+<!--            <i class="delete icon" @click="deleteVariable($event)"></i>-->
+<!--          </div>-->
+<!--        </span>-->
+<!--      </div>-->
     </div>
+    <!-- <div class="ui divider"></div> -->
   </div>
 </template>
 
 <script>
 import Vuex from "vuex";
 import CategoryTreeComponent from "./category-tree-component.vue";
+import {getI18n} from "../../commons/commons.js";
 
-let findUriUsingPrefLabels = (theiaVariables, prefLabels, lang) => {
-  let uris = [];
-  prefLabels.forEach(label => {
-    let tmpVariable = theiaVariables.find(variable => {
-      let tmp = variable.prefLabel.find(element => element.lang === lang);
-      return label === tmp.text;
-    });
-    uris.push(tmpVariable.uri);
-  });
-  return uris;
-};
 
 //
 /**
@@ -110,11 +100,6 @@ export default {
        */
       results: [],
       /**
-       * @vuese
-       * List of theia variable selected
-       */
-      variablesSelected: [],
-      /**
        * Position of the arrow selector
        */
       arrowCounter: -1,
@@ -127,34 +112,15 @@ export default {
   },
   computed: {
     ...Vuex.mapGetters([
+      "getFullFacetClassification",
       "getFacetClassification",
       "getFilters",
       "isFiltersEmpty",
-      "getCategoryNodesSelected"
+      "getCategoryNodesSelected", "getQueryableTheiaVariables"
     ]),
-    /**
-     * @vuese
-     * List of Theia variable that could be printed in the autocompletion block
-     * @type Array
-     */
-    prefLabelList() {
-      let tmp = [
-        ...new Set(
-          this.getFacetClassification.theiaVariables
-            .map(obj => {
-              return this.getI18n(obj.prefLabel, "en");
-            })
-            .sort()
-        )
-      ];
-      return tmp.filter(item => {
-        return !this.variablesSelected.includes(item);
-      });
-    }
   },
   methods: {
     ...Vuex.mapActions([
-      "setCategoryNodesSelected",
       "setTheiaVariablesFilter"
     ]),
     /**
@@ -162,16 +128,21 @@ export default {
      * Show autocompletion proposition
      */
     onChange() {
-      this.isVisible = true;
-      this.filterResults();
+      if(this.search===""){
+        this.isVisible = false;
+        this.results= [];
+      } else {
+        this.isVisible = true;
+        this.filterResults();
+      }
     },
     /**
      * @vuese
      * Filter prefLabelList using search input into a list of theiaVariable to be printed in the autocompletion block
      */
     filterResults() {
-      this.results = this.prefLabelList.filter(
-        item => item.toLowerCase().indexOf(this.search.toLowerCase()) > -1
+      this.results = this.getQueryableTheiaVariables.filter(
+          item => getI18n(item.simplifiedLabel,"en").toLowerCase().indexOf(this.search.toLowerCase()) > -1
       );
     },
     /**
@@ -179,50 +150,23 @@ export default {
      * Add a Theia variable to the query filter.
      * @arg TheiaVariable selected
      */
-    setResult(result) {
+    queryVariable(queryableTheiaVariable) {
       this.search = "";
       this.isVisible = false;
-      if (!this.variablesSelected.some(elem => elem === result)) {
-        this.variablesSelected.push(result);
+      if (!this.getFilters.theiaVariables.some(elem => elem.uri === queryableTheiaVariable.uri)) {
+        const tmp = [...this.getFilters.theiaVariables, queryableTheiaVariable]
+        this.setTheiaVariablesFilter(tmp)
       }
       this.arrowCounter = -1;
-      this.setTheiaVariablesFilter(
-        findUriUsingPrefLabels(
-          this.getFacetClassification.theiaVariables,
-          this.variablesSelected,
-          "en"
-        )
-      );
-    },
-    /**
-     * @vuese
-     * Remove a Theia variable to the query filter
-     */
-    deleteVariable(event) {
-      // the word to delete
-      let variable = event.currentTarget.parentElement.innerText.trim();
-      //the word is deleted from words array
-      this.variablesSelected.splice(
-        this.variablesSelected.indexOf(variable.valueOf()),
-        1
-      );
-      //the store filter is updated
-      this.setTheiaVariablesFilter(
-        findUriUsingPrefLabels(
-          this.getFacetClassification.theiaVariables,
-          this.variablesSelected,
-          "en"
-        )
-      );
     },
     /**
      * @vuese
      * Change arrow selector position
      */
     onArrowDown() {
-      if(this.search == ""){
+      if (this.search == "") {
         this.onChange();
-      } 
+      }
       if (this.arrowCounter < this.results.length) {
         this.arrowCounter = this.arrowCounter + 1;
       }
@@ -241,8 +185,8 @@ export default {
      * Select a Theia variable
      */
     onEnter() {
-      if (this.results.length > 0 && this.arrowCounter !== -1) {
-        this.setResult(this.results[this.arrowCounter]);
+      if (this.getQueryableTheiaVariables.length > 0 && this.arrowCounter !== -1) {
+        this.queryVariable(this.getQueryableTheiaVariables[this.arrowCounter]);
       }
     },
     /**
@@ -269,7 +213,6 @@ export default {
       this.isVisible = false;
       this.results = [];
       this.arrowCounter = -1;
-      this.setCategoryNodesSelected(null);
     },
     /**
      * @vuese
@@ -285,6 +228,9 @@ export default {
   },
   destroyed() {
     document.removeEventListener("click", this.handleClickOutside);
+  },
+  created() {
+
   }
 };
 </script>
@@ -346,9 +292,9 @@ export default {
   width: 18em;
   border-radius: 0.28571429rem;
   -webkit-box-shadow: 0 2px 4px 0 rgba(34, 36, 38, 0.12),
-    0 2px 10px 0 rgba(34, 36, 38, 0.15);
+  0 2px 10px 0 rgba(34, 36, 38, 0.15);
   box-shadow: 0 2px 4px 0 rgba(34, 36, 38, 0.12),
-    0 2px 10px 0 rgba(34, 36, 38, 0.15);
+  0 2px 10px 0 rgba(34, 36, 38, 0.15);
   border: 1px solid #d4d4d5;
   z-index: 998;
   text-shadow: 0 0 black;

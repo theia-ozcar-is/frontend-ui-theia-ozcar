@@ -1,27 +1,19 @@
 <template>
   <div id="facet-search-container">
-    <div class="ui buttons" id="selection-buttons">
-      <button class="ui button" @click="resetFacet">Reset</button>
-      <div class="or"></div>
-      <button class="ui teal button" @click="submitFacet">Submit selection</button>
-    </div>
     <div id="facet-placeholder">
-      <!-- <div>
-      <button class="ui button" @click="resetFacet">Reset</button>
-      <button :class="['ui', 'primary', 'button'] " @click="submitFacet">Submit</button>
-      </div>-->
+      <filter-summary-component @reset-filters="resetFacet"></filter-summary-component>
       <variable-component ref="variableComponent"></variable-component>
+      <feature-of-interest-component ref="featureOfInterestComponent"></feature-of-interest-component>
       <temporal-extent-component ref="temporalExtentComponent"></temporal-extent-component>
       <div class="ui segment">
         <div class="ui top attached label">
           <i class="info circle icon"></i> Producers
         </div>
-        <div v-if="getFacetClassification != null">
-          <facet-component
-            :facetElements="getFacetClassification.producerNamesFacet"
-            :mutationName="'UPDATE_FILTERS_PRODUCER_NAMES'"
-            :info="true"
-          ></facet-component>
+        <div v-if="getFullFacetClassification != null">
+          <producer-tree-component
+            :facetElements="getFullFacetClassification.producerNamesFacet"
+            :mutationName="'TOGGLE_FILTERS_PRODUCER_NAMES'"
+            :info="true"></producer-tree-component>
         </div>
       </div>
       <full-text-search-component ref="fullTextSearchComponent"></full-text-search-component>
@@ -29,10 +21,10 @@
         <div class="ui top attached label">
           <i class="globe icon"></i> Geologies
         </div>
-        <div v-if="getFacetClassification != null">
+        <div v-if="getFullFacetClassification != null">
           <facet-component
-            :facetElements="getFacetClassification.geologiesFacet"
-            :mutationName="'UPDATE_FILTERS_GEOLOGIES'"
+            :facetElements="getFullFacetClassification.geologiesFacet"
+            :mutationName="'TOGGLE_FILTERS_GEOLOGIES'"
             :info="false"
           ></facet-component>
         </div>
@@ -41,10 +33,10 @@
         <div class="ui top attached label">
           <i class="globe icon"></i> Climates
         </div>
-        <div v-if="getFacetClassification != null">
+        <div v-if="getFullFacetClassification != null">
           <facet-component
-            :facetElements="getFacetClassification.climatesFacet"
-            :mutationName="'UPDATE_FILTERS_CLIMATES'"
+            :facetElements="getFullFacetClassification.climatesFacet"
+            :mutationName="'TOGGLE_FILTERS_CLIMATES'"
             :info="false"
           ></facet-component>
         </div>
@@ -53,10 +45,10 @@
         <div class="ui top attached label">
           <i class="balance scale icon"></i> Fundings
         </div>
-        <div v-if="getFacetClassification != null">
+        <div v-if="getFullFacetClassification != null">
           <funding-tree-component
-            :facetElements="getFacetClassification.fundingNamesFacet"
-            :mutationName="'UPDATE_FILTERS_FUNDING_NAMES'"
+            :facetElements="getFullFacetClassification.fundingNamesFacet"
+            :mutationName="'TOGGLE_FILTERS_FUNDING_NAMES'"
           ></funding-tree-component>
         </div>
       </div>
@@ -70,6 +62,9 @@ import facetComponent from "./facet-component.vue";
 import temporalExtentComponent from "./temporal-extent-component.vue";
 import variableComponent from "./variable-component.vue";
 import fullTextSearchComponent from "./full-text-search-facet-component.vue";
+import producerTreeComponent from "./producer-tree-component.vue"
+import featureOfInterestComponent from "./feature-of-interest-component.vue"
+import filterSummaryComponent from "./filter-summary-component.vue"
 import Vuex from "vuex";
 
 /**
@@ -88,11 +83,20 @@ export default {
     temporalExtentComponent,
     variableComponent,
     fundingTreeComponent,
-    fullTextSearchComponent
+    fullTextSearchComponent,
+    producerTreeComponent,
+    featureOfInterestComponent,
+    filterSummaryComponent
+  },
+  data() {
+    return {
+      numberOfFitlers:0
+    }
   },
   computed: {
     ...Vuex.mapGetters([
       "getFacetClassification",
+      "getFullFacetClassification",
       "getFilters",
       "isFiltersEmpty"
     ])
@@ -100,7 +104,6 @@ export default {
   methods: {
     ...Vuex.mapActions([
       "initFacets",
-      "searchObservations",
       "resetFilters",
       "setProducerInfo"
     ]),
@@ -109,18 +112,10 @@ export default {
         this.$refs.variableComponent.resetSelection();
         this.$refs.temporalExtentComponent.resetSelection();
         this.$refs.fullTextSearchComponent.resetSelection();
-        this.initFacets();
-        this.$root.$emit("filter-reseted")
+        this.$refs.featureOfInterestComponent.resetSelection();
+        //this.$root.$emit("filter-reseted")
       });
     },
-    submitFacet() {
-      if (this.isFiltersEmpty) {
-        this.initFacets();
-      } else {
-        this.searchObservations(this.getFilters);
-        this.$root.$emit("observation-queried")
-      }
-    }
   },
   created() {
     /**
@@ -135,8 +130,7 @@ export default {
 <style>
 #facet-placeholder {
   position: absolute;
-  height: calc(100% - 8rem);
-  top: 4rem;
+  height: calc(100% - 4rem);
   width: 100%;
   overflow: auto;
   padding: 5px 5px 5px 5px;
@@ -151,16 +145,17 @@ export default {
   background-color:whitesmoke;
       border-right-style: solid;
   border-right-width: 2px;
+  z-index:999;
 }
 
-#selection-buttons {
-  width: calc(25% - 10px);
-  padding: 0px 5px 5px 5px;
-  display: flex;
-  position: fixed;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-}
+/*#selection-buttons {*/
+/*  width: calc(25% - 10px);*/
+/*  padding: 0px 5px 5px 5px;*/
+/*  display: flex;*/
+/*  position: fixed;*/
+/*  margin-bottom: 1rem;*/
+/*  margin-top: 1rem;*/
+/*}*/
 
 #facet-placeholder .ui.segment .ui.top.attached.label {
   background-color: #ffebcd

@@ -1,47 +1,74 @@
 <template>
-  <transition name="fade">
-    <div id="measurement-list-placeholder" :class="(active ? 'active': '')">
-      <span id="measurement-list-placeholder-state-selector" @click="changePanelState()">
-        <b v-if="active">Hide list</b>
-        <b v-else>Show list</b>
-        <i :class="['big', 'angle', 'double', active ? 'down' : 'up',  'icon']"></i>
-      </span>
-      <div id="measurement-list-container">
-        <div :class="['ui','inverted',  {'active':getPagesLoading},'dimmer']">
-          <div class="ui loader"></div>
-        </div>
-        <div
-          class="ui floating dropdown labeled icon button list-controls"
-          id="list-item-filter-dropdown"
+    <transition name="fade">
+      <div id="measurement-list-placeholder" :class="!isItemListFolded ? 'active' : ''">
+        <!-- <span
+          id="measurement-list-placeholder-state-selector"
+          @click="changePanelState()"
         >
-          <i class="filter icon"></i>
-          <span class="text"></span>
-          <!-- <div class="menu">
+          <b v-if="!isItemListFolded">Hide list</b>
+          <b v-else>Show list</b>
+          <i
+            :class="['big', 'angle', 'double', active ? 'down' : 'up', 'icon']"
+          ></i>
+        </span> -->
+        <div id="measurement-list-container">
+          <div
+            :class="['ui', 'inverted', { active: getPagesLoading }, 'dimmer']"
+          >
+            <div class="ui loader"></div>
+          </div>
+          <div
+            class="ui floating dropdown labeled icon button list-controls"
+            id="list-item-filter-dropdown"
+          >
+            <i class="filter icon"></i>
+            <span class="text"></span>
+            <!-- <div class="menu">
             <div class="item" data-value="observation">Measurement</div>
             <div class="item" data-value="dataset">Dataset</div>
             <div class="item" data-value="producer">Producer</div>
           </div>-->
-        </div>
-        <page-navigation-component class="list-controls"></page-navigation-component>
+          </div>
+          <page-navigation-component
+            class="list-controls"
+          ></page-navigation-component>
 
-        <div v-if="getItemListNature == 'observation'" id="observation-list">
-          <div v-for="(obs,index) in getObservationListItems" v-bind:key="index">
-            <observation-metadata-layout-component :observation="obs" class="ui message content"></observation-metadata-layout-component>
+          <div v-if="getItemListNature == 'observation'" id="observation-list">
+            <div
+              v-for="(obs, index) in getObservationListItems"
+              v-bind:key="index"
+            >
+              <observation-metadata-layout-component
+                :observation="obs"
+                class="ui message content"
+              ></observation-metadata-layout-component>
+            </div>
           </div>
-        </div>
-        <div v-if="getItemListNature == 'producer'" id="producer-list">
-          <div v-for="(producer,index) in getProducerListItems" v-bind:key="index">
-            <producer-metadata-layout-component :producer="producer" class="ui message content"></producer-metadata-layout-component>
+          <div v-if="getItemListNature == 'producer'" id="producer-list">
+            <div
+              v-for="(producer, index) in getProducerListItems"
+              v-bind:key="index"
+            >
+              <producer-metadata-layout-component
+                :producer="producer"
+                class="ui message content"
+              ></producer-metadata-layout-component>
+            </div>
           </div>
-        </div>
-        <div v-if="getItemListNature == 'dataset'" id="dataset-list">
-          <div v-for="(dataset,index) in getDatasetListItems" v-bind:key="index">
-            <dataset-metadata-layout-component :dataset="dataset" class="ui message content"></dataset-metadata-layout-component>
+          <div v-if="getItemListNature == 'dataset'" id="dataset-list">
+            <div
+              v-for="(dataset, index) in getDatasetListItems"
+              v-bind:key="index"
+            >
+              <dataset-metadata-layout-component
+                :dataset="dataset"
+                class="ui message content"
+              ></dataset-metadata-layout-component>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </transition>
+    </transition>
 </template>
 
 <script>
@@ -63,17 +90,17 @@ export default {
     ObservationMetadataLayoutComponent,
     ProducerMetadataLayoutComponent,
     DatasetMetadataLayoutComponent,
-    PageNavigationComponent
+    PageNavigationComponent,
   },
-  data() {
-    return {
-      /**
-       * @vuese
-       * Hide or show the result list
-       */
-      active: false
-    };
-  },
+  // data() {
+  //   return {
+  //     /**
+  //      * @vuese
+  //      * Hide or show the result list
+  //      */
+  //     active: false,
+  //   };
+  // },
   computed: {
     ...mapGetters([
       "getObservationListItems",
@@ -82,21 +109,22 @@ export default {
       "getTotalObservationsCount",
       "getPagesLoading",
       "getFilters",
-      "getItemListNature"
-    ])
+      "getItemListNature",
+      "isItemListFolded"
+    ]),
   },
   methods: {
     ...mapActions(["setItemListNature"]),
-    /**
-     * @vuese
-     * Toggle result list visibility
-     */
-    changePanelState() {
-      this.active = !this.active;
-    },
+    // /**
+    //  * @vuese
+    //  * Toggle result list visibility
+    //  */
+    // changePanelState() {
+    //   this.active = !this.active;
+    // },
     initDropdown() {
       $("#list-item-filter-dropdown").dropdown({
-        onChange: value => {
+        onChange: (value) => {
           if (value != this.getItemListNature && value != "") {
             this.setItemListNature(value);
           }
@@ -105,19 +133,19 @@ export default {
           {
             name: "Measurement",
             value: "observation",
-            selected: true
+            selected: true,
           },
           {
             name: "Dataset",
-            value: "dataset"
+            value: "dataset",
           },
           {
             name: "Producer",
-            value: "producer"
-          }
-        ]
+            value: "producer",
+          },
+        ],
       });
-    }
+    },
   },
   created() {
     /**
@@ -135,7 +163,7 @@ export default {
   },
   mounted() {
     this.initDropdown();
-  }
+  },
 };
 </script>
 
@@ -162,8 +190,8 @@ export default {
   padding: 0px 5px 0px 5px;
   background-color: #ffebcd;
   transition: transform 0.4s ease-in-out;
-  transform: translateY(calc(100% - 4rem - 40px));
-  z-index: 1000;
+  transform: translateX(-100%);
+  z-index: 998;
   padding-top: 0.5rem;
   position: relative;
   border-top: 2px solid rgba(34, 36, 38, 0.25);
@@ -178,7 +206,7 @@ export default {
 }
 
 #measurement-list-placeholder.active {
-  transform: translateY(0);
+  transform: translateX(0);
 }
 
 #measurement-list-container {
@@ -191,5 +219,6 @@ export default {
   /* position: relative; */
   height: calc(100% - 10rem);
   overflow: auto;
+  margin-top: 1rem;
 }
 </style>

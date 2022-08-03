@@ -1,24 +1,49 @@
 <template>
-  <div id="dataset-keyword-placeholder" class="ui segment" v-if="dataset.metadata.keywords">
+  <div
+    v-if="
+      dataset.metadata.keywords && dataset.metadata.keywords.length>0 &&
+      getTheiaVariablesOfADataset.length > 0
+    "
+    id="keyword-placeholder"
+    class="ui segment"
+  >
     <div class="ui top attached label">
-      <i class="font icon"></i> Producer keywords :
+      <i class="font icon"></i> Keywords :
     </div>
-    <div v-if="printKeywords(dataset.metadata.keywords,'en')">
-      <span v-for="(keyword, index) in dataset.metadata.keywords" :key="index">
-        <span id="keyword-container" v-if="!isKeywordPrefLabelNull(keyword.keyword,'en')">
-          <span v-if="keyword.uri != null">
-            <a :href="keyword.uri" class="ui blue label" target="_blank">{{getI18n(keyword.keyword,"en")}}</a>
-          </span>
-          <span v-else>
-            <div class="ui label">{{getI18n(keyword.keyword,"en")}}</div>
+    <div
+      id="dataset-keyword-placeholder"
+      class="ui segment"
+      v-if="dataset.metadata.keywords"
+    >
+      <div class="ui top left attached label">Producer keywords :</div>
+      <div v-if="printKeywords(dataset.metadata.keywords, 'en')">
+        <span
+          v-for="(keyword, index) in dataset.metadata.keywords"
+          :key="index"
+        >
+          <span
+            id="keyword-container"
+            v-if="!isKeywordPrefLabelNull(keyword.keyword, 'en')"
+          >
+            <span v-if="keyword.uri != null">
+              <a :href="keyword.uri" class="ui blue label" target="_blank">{{
+                getI18n(keyword.keyword, "en")
+              }}</a>
+            </span>
+            <span v-else>
+              <div class="ui label">{{ getI18n(keyword.keyword, "en") }}</div>
+            </span>
           </span>
         </span>
-      </span>
+      </div>
     </div>
+    <variableOfADatasetComponent></variableOfADatasetComponent>
   </div>
 </template>
 
 <script>
+import variableOfADatasetComponent from "./variable-of-a-dataset-component.vue";
+import Vuex from "vuex";
 /**
  * @vuese
  * Display keywords
@@ -26,12 +51,18 @@
  */
 export default {
   name: "dataset-keywords-component",
+  components: {
+    variableOfADatasetComponent,
+  },
+  computed: {
+    ...Vuex.mapGetters(["getTheiaVariablesOfADataset"]),
+  },
   props: {
     dataset: {
       //The dataset object
       type: Object,
-      required: true
-    }
+      required: true,
+    },
   },
   methods: {
     /**
@@ -39,7 +70,7 @@ export default {
      * Getter to get the value according the the internationalisation
      */
     getI18n(el, lang) {
-      let tmp = el.find(element => element.lang === lang);
+      let tmp = el.find((element) => element.lang === lang);
       return tmp.text;
     },
     /**
@@ -57,12 +88,12 @@ export default {
      */
     printKeywords(keywords, lang) {
       let print = true;
-      keywords.forEach(element => {
+      keywords.forEach((element) => {
         print = print && !this.isKeywordPrefLabelNull(element.keyword, lang);
       });
       return print;
-    }
-  }
+    },
+  },
 };
 </script>
 

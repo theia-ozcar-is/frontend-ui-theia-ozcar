@@ -1,26 +1,71 @@
 <template>
   <div class="category-node-placeholder">
-    <span>
+    <span v-if="getCategoryNodeIfPresentInResultFacet !== undefined">
+<!--      The node is present in the category node facet result -->
       <i
         :class="[setCircleIcon, 'circle', 'icon', isSelected ?'selected':'']"
         @click="toggleFolding"
       ></i>
+<!--      The  count is present and can be printed -->
+      <span v-if="getCategoryNodeIfPresentInResultFacet.count != null">
+        <b
+          class="node-simplifiedLabel"
+          :class="isSelected ?'selected':''"
+          @click="selectNode"
+          :id="node.uri"
+        >{{getI18n(node.simplifiedLabel,"en")}}</b>
+        <i>({{ getCategoryNodeIfPresentInResultFacet.count}})</i>
+        <i v-if="isSelected" class="check teal icon"></i>
+      </span>
+      <!--      The node is present in the category node facet result but there is no count - it is a variable node -->
+      <span v-else>
+        <i
+          class="node-simplifiedLabel"
+          :class="isSelected ?'selected':''"
+          @click="selectTheiaVariable(node)"
+          :id="node.uri"
+        >{{getI18n(node.simplifiedLabel,"en")}}</i>
+        <i v-if="isSelected" class="check teal icon"></i>
+      </span>
+    </span>
+    <span v-else-if="test(getCategoryNodesSelected)">
+      <i
+          :class="[setCircleIcon, 'circle', 'icon', isSelected ?'selected':'']"
+          @click="toggleFolding"
+      ></i>
+      <span>
+        <b
+            class="node-simplifiedLabel"
+            :class="isSelected ?'selected':''"
+            @click="selectNode"
+            :id="node.uri"
+        >{{getI18n(node.simplifiedLabel,"en")}}</b>
+        <i>(0)</i>
+        <i v-if="isSelected" class="check teal icon"></i>
+      </span>
+    </span>
+
+    <span v-else class="not-in-results">
+<!--      The node is not present in the category node facet result - the count is not printed-->
+      <i
+          :class="[setCircleIcon, 'circle', 'icon', isSelected ?'selected':'']"
+          @click="toggleFolding"
+      ></i>
       <span v-if="node.count != null">
         <b
-          class="node-preflabel"
-          :class="isSelected ?'selected':''"
-          v-if="node.count != null"
-          @click="selectNode"
-        >{{getI18n(node.prefLabel,"en")}}</b>
-        <i>({{ node.count}})</i>
-        <i v-if="isSelected" class="check teal icon"></i>
+            class="node-simplifiedLabel"
+            :class="isSelected ?'selected':''"
+            @click="selectNode"
+            :id="node.uri"
+        >{{getI18n(node.simplifiedLabel,"en")}}</b>
       </span>
       <span v-else>
         <i
-          class="node-preflabel"
-          :class="isSelected ?'selected':''"
-          @click="selectTheiaVariable(node)"
-        >{{getI18n(node.prefLabel,"en")}}</i>
+            class="node-simplifiedLabel"
+            :class="isSelected ?'selected':''"
+            @click="selectTheiaVariable(node)"
+            :id="node.uri"
+        >{{getI18n(node.simplifiedLabel,"en")}}</i>
         <i v-if="isSelected" class="check teal icon"></i>
       </span>
     </span>
@@ -29,9 +74,8 @@
         <ul>
           <li v-for="(item,index) in node.narrowers" :key="index" class="category-node">
             <category-tree-component
-              :node="item"
-              v-on:select-a-theia-variable="selectTheiaVariable"
-            ></category-tree-component>
+              :node="item">
+            </category-tree-component>
           </li>
         </ul>
       </div>
@@ -39,9 +83,8 @@
         <ul>
           <li v-for="(item,index) in node.theiaVariables" :key="index" class="variable-leaf">
             <category-tree-component
-              :node="item"
-              v-on:select-a-theia-variable="selectTheiaVariable"
-            ></category-tree-component>
+              :node="item">
+            </category-tree-component>
           </li>
         </ul>
       </div>
@@ -51,7 +94,6 @@
 
 <script>
 import Vuex from "vuex";
-
 /**
  * @vuese
  * Component representing node of the facet category tree
@@ -79,7 +121,27 @@ export default {
     }
   },
   computed: {
-    ...Vuex.mapGetters(["getCategoryNodesSelected", "getFacetClassification"]),
+    ...Vuex.mapGetters(["getCategoryNodesSelected", "getFacetClassification","getFilters"]),
+    /**
+     * Check if the category node exists a as a resulting faceted category node after a user query.
+     * If it exists the method return the faceted category node (with observation count) otherwise it returns undefined
+     * @returns If it exists the method return the faceted category node (with observation count) otherwise it returns undefined
+     */
+    getCategoryNodeIfPresentInResultFacet() {
+
+     // let variableNode = this.getFacetClassification.theiaVariables.find(element => element.uri === this.node.uri)
+      let variableNode= this.getFacetClassification.theiaVariables.find(element => {
+        let elementLabelEn = element.simplifiedLabel.find(label => label.lang === "en").text
+        let nodeLabelEn = this.node.simplifiedLabel.find(label => label.lang === "en").text
+        return elementLabelEn === nodeLabelEn
+      })
+      let categoryNode = this.getFacetClassification.theiaCategoryFlat.find(element => element.uri === this.node.uri);
+      if(categoryNode === undefined) {
+        return variableNode
+      } else {
+        return categoryNode
+      }
+    },
     /**
      * @vuese
      * true if the node has been selected by user
@@ -97,7 +159,7 @@ export default {
      */
     setCircleIcon() {
       if (
-        this.node.narrowers ||
+          (this.node.narrowers && this.node.narrowers.length > 0) ||
         (this.node.theiaVariables && this.node.theiaVariables.length > 0)
       ) {
         if (this.isFolded) {
@@ -123,7 +185,11 @@ export default {
     }
   },
   methods: {
-    ...Vuex.mapActions(["setCategoryNodesSelected"]),
+
+    ...Vuex.mapActions(["setCategoryNodesSelected","setTheiaVariablesFilter"]),
+    test(get) {
+      return get.some(element => (element.uri === this.node.uri))
+    },
     /**
      * @vuese
      * Getter to get the value according the the internationalisation
@@ -154,18 +220,14 @@ export default {
      * Select a Theia variable - in case the node represent a Theia variable
      */
     selectTheiaVariable(node) {
-      if (node.prefLabel) {
-        this.$emit(
-          "select-a-theia-variable",
-          this.getI18n(node.prefLabel, "en")
-        );
-      } else {
-        this.$emit("select-a-theia-variable", node);
+      if (!this.getFilters.theiaVariables.some(elem => elem.simplifiedLabel.find(label => label.lang === "en").text === node.simplifiedLabel.find(label => label.lang === "en").text)) {
+        const tmp = [...this.getFilters.theiaVariables, node]
+        this.setTheiaVariablesFilter(tmp)
       }
     },
     unselectParentNode(categoryNodeComponent) {
       if (
-        categoryNodeComponent.$parent.$options.name == "category-tree-component"
+        categoryNodeComponent.$parent.$options.name === "category-tree-component"
       ) {
         if (categoryNodeComponent.$parent.isSelected) {
           categoryNodeComponent.setCategoryNodesSelected(
@@ -210,11 +272,11 @@ export default {
   cursor: pointer;
 }
 
-.node-preflabel.selected {
+.node-simplifiedLabel.selected {
   color: teal;
 }
 
-.node-preflabel:hover {
+.node-simplifiedLabel:hover {
   color: teal;
   cursor: pointer;
 }
@@ -223,5 +285,11 @@ export default {
   vertical-align: middle;
   margin-left: 1em;
   margin-right: calc(1em + 0.25rem);
+}
+
+.category-node-placeholder span.not-in-results span{
+  color: darkgray;
+  font-weight: lighter;
+  font-size: small;
 }
 </style>

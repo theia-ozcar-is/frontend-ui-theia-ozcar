@@ -10,7 +10,7 @@
         </div>
         <div class="column">
 
-          <variable-of-a-dataset-component></variable-of-a-dataset-component>
+          <!-- <variable-of-a-dataset-component></variable-of-a-dataset-component> -->
           <dataset-keywords-component :dataset="datasetDetail.dataset"></dataset-keywords-component>
           <contacts-info-panel-component
             :contacts="datasetDetail.dataset.metadata.contacts"
@@ -23,17 +23,6 @@
           <dateset-temporal-extent-info-panel-component
             :temporalExtent="datasetDetail.dataset.metadata.temporalExtent"
           ></dateset-temporal-extent-info-panel-component>
-          <geology-climate-info-panel-component
-            :geologies="datasetDetail.dataset.metadata.portalSearchCriteria.geologies"
-            :climates="datasetDetail.dataset.metadata.portalSearchCriteria.climates"
-          ></geology-climate-info-panel-component>
-          <!-- <dataset-spatial-extent-info-panel-component
-            :spatialExtent="observationsDetail[0].dataset.metadata.spatialExtent"
-          ></dataset-spatial-extent-info-panel-component>-->
-          <!-- <map-items-of-a-dataset-component
-            :loader="loader"
-            @change-loader-state="changeLoaderState"
-          ></map-items-of-a-dataset-component>-->
           <div v-if="datasetDetail.dataset.metadata.onlineResource != null">
             <online-resource-info-panel-component
               :onlineResource="datasetDetail.dataset.metadata.onlineResource"
@@ -95,7 +84,7 @@ import mapItemsOfADatasetComponent from "./dataset-map-component.vue";
 import geologyClimateInfoPanelComponent from "./geology-climate-info-panel-component.vue";
 import datesetTemporalExtentInfoPanelComponent from "./dataset-temporal-extent-info-panel-component.vue";
 import datasetSpatialExtentInfoPanelComponent from "./dataset-spatial-extent-info-panel-component.vue";
-import variableOfADatasetComponent from "./variable-of-a-dataset-component.vue";
+//import variableOfADatasetComponent from "./variable-of-a-dataset-component.vue";
 
 export default {
   name: "dataset-metadata-info-panel-component",
@@ -121,11 +110,10 @@ export default {
     onlineResourceInfoPanelComponent,
     otherObservationsOfADatasetComponent,
     mapItemsOfADatasetComponent,
-    geologyClimateInfoPanelComponent,
+    // geologyClimateInfoPanelComponent,
     producerOnlineResourceInfoPanelComponent,
     datasetSpatialExtentInfoPanelComponent,
-    datesetTemporalExtentInfoPanelComponent,
-    variableOfADatasetComponent
+    datesetTemporalExtentInfoPanelComponent
   },
   methods: {
     /**

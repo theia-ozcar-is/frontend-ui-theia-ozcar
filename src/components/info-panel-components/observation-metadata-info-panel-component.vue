@@ -9,14 +9,13 @@
           <observed-property-info-panel-component :observationsDetail="observationsDetail"></observed-property-info-panel-component>
         </div>
         <div class="column">
-          <!-- <observation-temporal-extent-info-panel-component :temporalExtent="observationsDetail[0].observation.temporalExtent"></observation-temporal-extent-info-panel-component> -->
           <observation-location-info-panel-component
             :featureOfInterest="observationsDetail[0].observation.featureOfInterest"
           ></observation-location-info-panel-component>
-          <!-- <sensors-info-panel-component
-            v-if="!isProcedureNull()"
-            :observationsDetail="observationsDetail"
-          ></sensors-info-panel-component>-->
+          <geology-climate-info-panel-component
+            :geologies="observationsDetail[0].observation.featureOfInterest.geologyFeature"
+            :climates="observationsDetail[0].observation.featureOfInterest.climateFeature"
+          ></geology-climate-info-panel-component>
         </div>
         <div class="column">
           <other-theia-variable-at-location-component
@@ -36,7 +35,7 @@
           <dataset-identification-info-panel-component :dataset="observationsDetail[0].dataset"></dataset-identification-info-panel-component>
         </div>
         <div class="column">
-          <variable-of-a-dataset-component></variable-of-a-dataset-component>
+          <!-- <variable-of-a-dataset-component></variable-of-a-dataset-component> -->
           <dataset-keywords-component :dataset="observationsDetail[0].dataset"></dataset-keywords-component>
           <contacts-info-panel-component
             :contacts="observationsDetail[0].dataset.metadata.contacts"
@@ -49,10 +48,10 @@
           <dateset-temporal-extent-info-panel-component
             :temporalExtent="observationsDetail[0].dataset.metadata.temporalExtent"
           ></dateset-temporal-extent-info-panel-component>
-          <geology-climate-info-panel-component
-            :geologies="observationsDetail[0].dataset.metadata.portalSearchCriteria.geologies"
-            :climates="observationsDetail[0].dataset.metadata.portalSearchCriteria.climates"
-          ></geology-climate-info-panel-component>
+<!--          <geology-climate-info-panel-component-->
+<!--            :geologies="observationsDetail[0].dataset.metadata.portalSearchCriteria.geologies"-->
+<!--            :climates="observationsDetail[0].dataset.metadata.portalSearchCriteria.climates"-->
+<!--          ></geology-climate-info-panel-component>-->
           <!-- <dataset-spatial-extent-info-panel-component
             :spatialExtent="observationsDetail[0].dataset.metadata.spatialExtent"
           ></dataset-spatial-extent-info-panel-component>-->
@@ -161,7 +160,7 @@ import producerIdentificationInfoPanelComponent from "./producer-identification-
 import producerFundingsInfoPanelComponent from "./producer-fundings-info-panel-component.vue";
 import observationLocationInfoPanelComponent from "./observation-location-info-panel-component.vue";
 import dataProcessingInfoPanelComponent from "./data-processing-info-panel-component.vue";
-import producerContactsInfoPanelComponent from "./contacts-info-panel-component.vue";
+//import producerContactsInfoPanelComponent from "./contacts-info-panel-component.vue";
 import producerOnlineResourceInfoPanelComponent from "./producer-online-resource-info-panel-component.vue";
 import geologyClimateInfoPanelComponent from "./geology-climate-info-panel-component.vue";
 import datesetTemporalExtentInfoPanelComponent from "./dataset-temporal-extent-info-panel-component.vue";
@@ -169,7 +168,7 @@ import datasetSpatialExtentInfoPanelComponent from "./dataset-spatial-extent-inf
 import otherTheiaVariableAtLocationComponent from "./other-theia-variable-at-location-component.vue";
 import otherObservationsOfADatasetComponent from "./other-observations-of-dataset.vue";
 import mapItemsOfADatasetComponent from "./dataset-map-component.vue";
-import variableOfADatasetComponent from "./variable-of-a-dataset-component.vue";
+//import variableOfADatasetComponent from "./variable-of-a-dataset-component.vue";
 
 /**
  * @vuese
@@ -211,7 +210,7 @@ export default {
     otherTheiaVariableAtLocationComponent,
     otherObservationsOfADatasetComponent,
     mapItemsOfADatasetComponent,
-    variableOfADatasetComponent
+    //variableOfADatasetComponent
   },
   methods: {
     // /**

@@ -1,8 +1,8 @@
 <template>
-  <div if="funding-tree-placeholder">
+  <div id="funding-tree-placeholder">
     <div v-for="fundingType in fundingTypes" :key="fundingType">
       <funding-node-component
-        v-if="['French universities and schools','French research institutes','Research unit','Federative structure','Other universities and schools','Other research institutes','Other'].includes(fundingType.trim())"
+        v-if="['French universities and schools','French research institutes','French research units','French federative structure','Other universities and schools','Other research institutes','Other'].includes(fundingType.trim())"
         :type="fundingType"
         :fundings="fundingNodes[fundingType]"
         :mutationName="mutationName"
@@ -28,7 +28,7 @@ export default {
       type: Array,
       required: true
     },
-    //Store mutation name to update the filters. ex "UPDATE_FILTERS_FUNDING_NAMES"
+    //Store mutation name to update the filters. ex "TOGGLE_FILTERS_FUNDING_NAMES"
     mutationName: {
       type: String,
       required: true
@@ -39,10 +39,16 @@ export default {
       fundingNodes: {}
     };
   },
-  computed:{
+  computed: {
     fundingTypes() {
-      return Object.keys(this.fundingNodes).sort();
-
+      let ftypes = Object.keys(this.fundingNodes).sort();
+      for (let i=0; i< ftypes.length; i++) {
+        if(ftypes[i] === "Other") {
+          ftypes.push(ftypes[i]);
+          ftypes.splice (i,1);
+        }
+      }
+      return ftypes;
     }
   },
   watch: {

@@ -35,7 +35,7 @@ const mutations = {
   ) => {
     //table containing each of the variable at one location
     let variableTable = `
-	<table class="ui selectable celled table" style="margin-top:1rem">
+	<table class="ui selectable celled table map-popup"">
 	<thead>
     <tr>
 	<th>Measured variables</th>
@@ -48,7 +48,7 @@ const mutations = {
       if (variableNameAndIds[i].theiaVariableName != null) {
         variableTable =
           variableTable +
-          `<tr class=""pointer">
+          `<tr class="pointer">
 		<td id="variable_` +
           i +
           `">` +
@@ -112,12 +112,12 @@ const actions = {
 
           let sortedVariableNameAndIds = response.data.variableNameAndIds.sort(
             function(a, b) {
-              if (a.theiaVariableName === null) {
+              if (a.theiaVariableName == null) {
                 a = null;
               } else {
                 a = getI18nField(a.theiaVariableName,"en");
               }
-              if (b.theiaVariableName === null) {
+              if (b.theiaVariableName == null) {
                 b = null;
               } else {
                 b = getI18nField(b.theiaVariableName,"en");

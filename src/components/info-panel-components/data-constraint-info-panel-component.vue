@@ -8,7 +8,7 @@
       {{getI18n(dataConstraint.accessUseConstraint,"en")}}
     </div>
     <br />
-    <div v-if="dataConstraint.urlDataPolicy != null">
+    <div class="data policy placeholder" v-if="dataConstraint.urlDataPolicy != null">
       <b>Data policy:</b>
       <a
         :href="getI18n(dataConstraint.urlDataPolicy,'en')"
@@ -60,4 +60,7 @@ export default {
 </script>
 
 <style>
+.data.policy.placeholder {
+  text-align: left;
+}
 </style>

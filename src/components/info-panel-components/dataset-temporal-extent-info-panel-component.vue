@@ -2,7 +2,7 @@
 	<div class="ui segment">
 		<div class="ui top attached label">
 			<i class="calendar check outline icon"></i> Temporal extent :</div>
-		<div>{{temporalExtent.dateBeg}} <br> {{temporalExtent.dateEnd}} </div>
+		<div><b>From </b>{{temporalExtent.dateBeg.replace(/T.*/,'')}}<b> to </b>{{temporalExtent.dateEnd.replace(/T.*/,'')}} </div>
 	</div>
 </template>
 
